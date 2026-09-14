@@ -215,6 +215,25 @@
   .lead-hq{color:var(--text-soft);font-size:12px;}
   .detail-row td{background:var(--surface-alt);padding:0 14px 16px;font-size:13px;color:var(--text-soft);line-height:1.55;}
   .detail-row.hidden{display:none;}
+  .research-block{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);}
+  .research-block strong{color:var(--text);}
+  .priority-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:26px;
+    height:22px;
+    padding:0 7px;
+    border-radius:100px;
+    font-size:11.5px;
+    font-weight:700;
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--text-soft);
+    border:1px solid var(--line);
+  }
+  .priority-badge.p1{background:var(--teal-deep);color:#fff;border-color:var(--teal-deep);}
+  .priority-badge.p2{background:rgba(107,107,110,0.3);color:#D6D6D8;border-color:var(--line);}
+  .priority-badge.p3{background:rgba(154,84,120,0.22);color:#D999BB;border-color:var(--plum);}
   select.status-select{
     font-family:'Inter',sans-serif;
     font-size:12.5px;
@@ -360,7 +379,7 @@
       <div class="chip-row" id="lead-chips"></div>
       <table>
         <thead>
-          <tr><th>Company</th><th>Employees</th><th>Vertical</th><th>Funding</th><th>Status</th></tr>
+          <tr><th>Company</th><th>Employees</th><th>Vertical</th><th>Funding</th><th>Priority</th><th>Status</th></tr>
         </thead>
         <tbody id="lead-tbody"></tbody>
       </table>
@@ -442,14 +461,14 @@ const STATUS_CLASS = {"To research":"research","Contacted":"contacted","Replied"
 
 const SEED_LEADS = {
   "icp-a": {label:"ICP A · US", companies:[
-    {name:"NetBox Labs", hq:"New York, NY", employees:"~140", funding:"$55M (Series B)", vertical:"DevOps / Cloud Infra", detail:"Top of employee range; enterprise customers (ARM, CoreWeave, J.P. Morgan); scaling GTM fast post-raise."},
-    {name:"Payabli", hq:"Miami, FL", employees:"~110-115", funding:"$108M total (Series B)", vertical:"Fintech B2B", detail:"Well-funded embedded payments infra for software companies — has budget, needs pipeline efficiency."},
-    {name:"Supply Wisdom", hq:"New York, NY", employees:"~122", funding:"$30.5M+ (Series B)", vertical:"B2B Risk Intelligence / BI SaaS", detail:"Recently expanded internationally (Dublin office) — signals active GTM investment."},
-    {name:"Runlayer", hq:"New York, NY", employees:"~39", funding:"$41M (Series A)", vertical:"AI Governance / Security", detail:"On-trend AI agent security category — natural fit for an AI visibility wedge conversation."},
-    {name:"Nebulock", hq:"Boston, MA", employees:"~36", funding:"$33.5M (Series A)", vertical:"AI / Cybersecurity", detail:"Small, lean team scaling fast post-raise — classic \"scale without hiring 10 SDRs\" profile."},
-    {name:"Zip Security", hq:"New York, NY", employees:"~30-60 (est.)", funding:"$21M total (Series A)", vertical:"Cybersecurity (SMB-focused)", detail:"Selling into underserved SMB security market — needs efficient outbound and content."},
-    {name:"Pangea", hq:"Palo Alto, CA", employees:"~28 (below floor)", funding:"Series A/B (undisclosed)", vertical:"AI Security Platform", detail:"Slightly below employee floor, but strong AI SaaS vertical fit; founder-led buyer."},
-    {name:"Endor Labs", hq:"Palo Alto, CA", employees:"80-150+ (unconfirmed)", funding:"$188M total (3 rounds)", vertical:"AppSec / DevOps", detail:"Heavily funded, security-for-developers vertical, likely scaling GTM aggressively."}
+    {name:"NetBox Labs", hq:"New York, NY", employees:"~140", funding:"$55M (Series B)", vertical:"DevOps / Cloud Infra", detail:"Top of employee range; enterprise customers (ARM, CoreWeave, J.P. Morgan); scaling GTM fast post-raise.", priority:2, research:"Hiring Demand Gen for marketing and several sales. Does not appear in search results for their key terms. Good website, too many landing pages + no FAQs for GEO. Too generic"},
+    {name:"Payabli", hq:"Miami, FL", employees:"~110-115", funding:"$108M total (Series B)", vertical:"Fintech B2B", detail:"Well-funded embedded payments infra for software companies — has budget, needs pipeline efficiency.", priority:1, research:"Not in top results/not widely known. Slow website no SEO + no FAQs section for GEO"},
+    {name:"Supply Wisdom", hq:"New York, NY", employees:"~122", funding:"$30.5M+ (Series B)", vertical:"B2B Risk Intelligence / BI SaaS", detail:"Recently expanded internationally (Dublin office) — signals active GTM investment.", priority:1, research:"Heavy render + no FAQs landing + no GEO strat. Hiring for expansion all marketing and sales positions"},
+    {name:"Runlayer", hq:"New York, NY", employees:"~39", funding:"$41M (Series A)", vertical:"AI Governance / Security", detail:"On-trend AI agent security category — natural fit for an AI visibility wedge conversation.", priority:2, research:"Small company 53 employees. Website made with AI + no SEO or GEO. Poor results with GEO, too many GTM people involved"},
+    {name:"Nebulock", hq:"Boston, MA", employees:"~36", funding:"$33.5M (Series A)", vertical:"AI / Cybersecurity", detail:"Small, lean team scaling fast post-raise — classic \"scale without hiring 10 SDRs\" profile.", priority:1, research:"Investing in Demand Gen and Content Writers. Lots of impressions but no conversion. Heavy, no authority, no GEO score above 50"},
+    {name:"Zip Security", hq:"New York, NY", employees:"~30-60 (est.)", funding:"$21M total (Series A)", vertical:"Cybersecurity (SMB-focused)", detail:"Selling into underserved SMB security market — needs efficient outbound and content.", priority:1, research:"Small company of 27 employees, looking to hire SEO & AI Search Manager. Average GEO score, needs EET"},
+    {name:"Pangea", hq:"Palo Alto, CA", employees:"~28 (below floor)", funding:"Series A/B (undisclosed)", vertical:"AI Security Platform", detail:"Slightly below employee floor, but strong AI SaaS vertical fit; founder-led buyer.", priority:2, research:"Was acquired so they have budget, website is not being supported. Need SEO and GEO"},
+    {name:"Endor Labs", hq:"Palo Alto, CA", employees:"80-150+ (unconfirmed)", funding:"$188M total (3 rounds)", vertical:"AppSec / DevOps", detail:"Heavily funded, security-for-developers vertical, likely scaling GTM aggressively.", priority:3, research:"Larger than our scope of work but a possible hail mary. Looking to hire, so scaling is up and may need GTM for LATAM in general. Heavy page and not optimized. Needs SEO and GEO audit."}
   ]},
   "icp-b-uk": {label:"ICP B · UK & Europe", companies:[
     {name:"Duffel", hq:"London, UK", employees:"~56", funding:"$56M total (Series B)", vertical:"Travel Tech API (B2B SaaS)", detail:"Serves US-based OTAs and travel platforms; steady growth trajectory."},
@@ -523,16 +542,19 @@ function renderLeadChips(){
 function renderLeadTable(){
   const tbody = document.getElementById('lead-tbody');
   tbody.innerHTML = '';
-  SEED_LEADS[activeChip].companies.forEach((c,i)=>{
+  const companies = [...SEED_LEADS[activeChip].companies].sort((a,b)=>(a.priority||9)-(b.priority||9));
+  companies.forEach((c,i)=>{
     const row = document.createElement('tr');
     row.className = 'lead-row';
+    const priorityCell = c.priority ? `<span class="priority-badge p${c.priority}">P${c.priority}</span>` : `<span class="priority-badge">—</span>`;
     row.innerHTML = `
       <td><div class="lead-company">${c.name}</div><div class="lead-hq">${c.hq}</div></td>
       <td>${c.employees}</td>
       <td>${c.vertical}</td>
       <td>${c.funding}</td>
+      <td>${priorityCell}</td>
       <td></td>`;
-    const statusTd = row.children[4];
+    const statusTd = row.children[5];
     const sel = document.createElement('select');
     sel.className = 'status-select';
     STATUSES.forEach(s=>{
@@ -547,7 +569,8 @@ function renderLeadTable(){
 
     const detailRow = document.createElement('tr');
     detailRow.className = 'detail-row hidden';
-    detailRow.innerHTML = `<td colspan="5">${c.detail}</td>`;
+    const researchHtml = c.research ? `<div class="research-block"><strong>Research notes:</strong> ${c.research}</div>` : '';
+    detailRow.innerHTML = `<td colspan="6">${c.detail}${researchHtml}</td>`;
 
     row.onclick = ()=> detailRow.classList.toggle('hidden');
     tbody.appendChild(row);
