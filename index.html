@@ -414,10 +414,15 @@
     <section class="view" id="view-tasks">
       <div class="view-head">
         <h1 class="view-title">To-do</h1>
-        <p class="view-desc">Working list for GTM buildout and outreach prep.</p>
+        <p class="view-desc">Working list for GTM buildout and outreach prep — tagged by owner. Jan: GTM, sales, initial outreach, account management, audits. Florencia: SEO / GEO.</p>
       </div>
+      <div class="chip-row" id="task-chips"></div>
       <div class="form-inline">
-        <input id="task-input" placeholder="Add a task..." style="width:320px;">
+        <input id="task-input" placeholder="Add a task..." style="width:280px;">
+        <select id="task-owner" style="padding:9px 11px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--text);">
+          <option value="GTM">Jan — GTM</option>
+          <option value="SEO">Florencia — SEO/GEO</option>
+        </select>
         <button class="btn" id="add-task">Add task</button>
       </div>
       <div class="panel" style="margin-top:18px;">
@@ -460,7 +465,7 @@
 const STATUSES = ["To research","Contacted","Replied","Meeting booked","Closed"];
 const STATUS_CLASS = {"To research":"research","Contacted":"contacted","Replied":"replied","Meeting booked":"meeting","Closed":"closed"};
 
-const SEED_LEADS = {
+let SEED_LEADS = {
   "icp-a": {label:"ICP A · US", companies:[
     {name:"NetBox Labs", hq:"New York, NY", employees:"~140", funding:"$55M (Series B)", vertical:"DevOps / Cloud Infra", website:"netboxlabs.com", detail:"Top of employee range; enterprise customers (ARM, CoreWeave, J.P. Morgan); scaling GTM fast post-raise.", angle:"VP Marketing / Head of Growth — lead with GTM efficiency post-Series B", priority:2, research:"Hiring Demand Gen for marketing and several sales. Does not appear in search results for their key terms. Good website, too many landing pages + no FAQs for GEO. Too generic"},
     {name:"Payabli", hq:"Miami, FL", employees:"~110-115", funding:"$108M total (Series B)", vertical:"Fintech B2B", website:"payabli.com", detail:"Well-funded embedded payments infra for software companies — has budget, needs pipeline efficiency.", angle:"VP Marketing / CMO — lead with AI search visibility angle", priority:1, research:"Not in top results/not widely known. Slow website no SEO + no FAQs section for GEO"},
@@ -510,19 +515,34 @@ async function saveKey(key, value){
   }catch(e){ console.error('Save error', key, e); }
 }
 
+async function fetchLeadsFromCloud(){
+  try{
+    const res = await fetch(SUPABASE_URL+'/dashboard_state?key=eq.forza_leads&select=value', { headers: SB_HEADERS });
+    const rows = await res.json();
+    if(Array.isArray(rows) && rows.length && rows[0].value){
+      SEED_LEADS = rows[0].value;
+      return true;
+    }
+  }catch(e){ console.error('Leads fetch error', e); }
+  return false;
+}
+
 let leadStatus = {};
 let pools = [];
 let creditLog = [];
 let tasks = [];
 let months = [];
 let activeChip = "icp-a";
+let activeTaskFilter = "all";
 let ready = false;
 
 const DEFAULT_TASKS = [
-  {text:"Verify employee counts for shortlisted leads in Sales Navigator", done:false},
-  {text:"Set up Apollo account and import ICP A filters", done:false},
-  {text:"Draft first outreach sequence for Yuno and Robin AI", done:false},
-  {text:"Connect HubSpot once account is live", done:false}
+  {text:"Verify employee counts for shortlisted leads in Sales Navigator", done:false, owner:"GTM"},
+  {text:"Set up Apollo account and import ICP A filters", done:false, owner:"GTM"},
+  {text:"Draft first outreach sequence for Yuno and Robin AI", done:false, owner:"GTM"},
+  {text:"Connect HubSpot once account is live", done:false, owner:"GTM"},
+  {text:"Run SEO/GEO audits on P1 accounts flagged with no FAQs / weak GEO score (Payabli, Supply Wisdom, Nebulock, Zip Security)", done:false, owner:"SEO"},
+  {text:"Build GEO content template (FAQ blocks) to pitch as quick-win in audits", done:false, owner:"SEO"}
 ];
 
 function statusOf(name){ return leadStatus[name] || "To research"; }
@@ -657,16 +677,34 @@ function renderLog(){
 }
 
 // ---------- tasks ----------
+const TASK_OWNER_LABEL = {GTM:"Jan · GTM", SEO:"Florencia · SEO/GEO"};
+function renderTaskChips(){
+  const wrap = document.getElementById('task-chips');
+  if(!wrap) return;
+  const filters = [["all","All"],["GTM","Jan · GTM"],["SEO","Florencia · SEO/GEO"]];
+  wrap.innerHTML = '';
+  filters.forEach(([val,label])=>{
+    const c = document.createElement('button');
+    c.className = 'chip' + (val===activeTaskFilter ? ' active':'');
+    c.textContent = label;
+    c.onclick = ()=>{ activeTaskFilter = val; renderTaskChips(); renderTasks(); };
+    wrap.appendChild(c);
+  });
+}
 function renderTasks(){
   const list = document.getElementById('task-list');
   list.innerHTML = '';
-  if(tasks.length===0){ list.innerHTML = '<div class="empty-state"><strong>Nothing on the list</strong>Add a task above to get started.</div>'; return; }
-  tasks.forEach((t,i)=>{
+  const filtered = activeTaskFilter==='all' ? tasks : tasks.filter(t=>t.owner===activeTaskFilter);
+  if(filtered.length===0){ list.innerHTML = '<div class="empty-state"><strong>Nothing here</strong>Add a task above, or switch filters.</div>'; return; }
+  filtered.forEach((t)=>{
+    const i = tasks.indexOf(t);
     const row = document.createElement('div');
     row.className = 'task-row';
+    const ownerClass = t.owner==='SEO' ? 'p3' : 'p1';
+    const ownerBadge = t.owner ? `<span class="priority-badge ${ownerClass}" style="margin-left:8px;">${TASK_OWNER_LABEL[t.owner]||t.owner}</span>` : '';
     row.innerHTML = `
       <div class="task-check ${t.done?'done':''}">${t.done?'✓':''}</div>
-      <div class="task-text ${t.done?'done':''}">${t.text}</div>
+      <div class="task-text ${t.done?'done':''}">${t.text}${ownerBadge}</div>
       <button class="task-del">Remove</button>`;
     row.querySelector('.task-check').onclick = ()=>{ t.done=!t.done; saveKey('tasks', tasks); renderTasks(); renderOverview(); };
     row.querySelector('.task-del').onclick = ()=>{ tasks.splice(i,1); saveKey('tasks', tasks); renderTasks(); renderOverview(); };
@@ -675,9 +713,10 @@ function renderTasks(){
 }
 document.getElementById('add-task').onclick = ()=>{
   const input = document.getElementById('task-input');
+  const owner = document.getElementById('task-owner').value;
   const val = input.value.trim();
   if(!val) return;
-  tasks.unshift({text:val, done:false});
+  tasks.unshift({text:val, done:false, owner});
   saveKey('tasks', tasks);
   input.value='';
   renderTasks(); renderOverview();
@@ -774,6 +813,7 @@ function renderAll(){
   renderLeadTable();
   renderPools();
   renderLog();
+  renderTaskChips();
   renderTasks();
   renderMonths();
   renderOverview();
@@ -793,6 +833,7 @@ async function init(){
   creditLog = cl;
   tasks = tk === null ? DEFAULT_TASKS : tk;
   months = mo;
+  await fetchLeadsFromCloud();
   ready = true;
   document.querySelector('main').style.opacity = '1';
   renderAll();
@@ -812,6 +853,7 @@ setInterval(async ()=>{
     loadKey('months', months)
   ]);
   leadStatus = ls; pools = pl; creditLog = cl; tasks = tk; months = mo;
+  await fetchLeadsFromCloud();
   renderAll();
 }, 120000);
 </script>
