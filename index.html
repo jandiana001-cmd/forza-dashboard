@@ -489,15 +489,25 @@ const SEED_LEADS = {
   ]}
 };
 
+const SUPABASE_URL = 'https://otdrqlwjwsnrjpkscojb.supabase.co/rest/v1';
+const SUPABASE_KEY = 'sb_publishable_YmXVwh7N5RJPnvWA1A5rxg_rVqcRv5W';
+const SB_HEADERS = { apikey: SUPABASE_KEY, Authorization: 'Bearer '+SUPABASE_KEY };
+
 async function loadKey(key, fallback){
   try{
-    const raw = localStorage.getItem('forza_'+key);
-    return raw !== null ? JSON.parse(raw) : fallback;
-  }catch(e){ return fallback; }
+    const res = await fetch(SUPABASE_URL+'/dashboard_state?key=eq.forza_'+key+'&select=value', { headers: SB_HEADERS });
+    const rows = await res.json();
+    return (Array.isArray(rows) && rows.length) ? rows[0].value : fallback;
+  }catch(e){ console.error('Load error', key, e); return fallback; }
 }
 async function saveKey(key, value){
-  try{ localStorage.setItem('forza_'+key, JSON.stringify(value)); }
-  catch(e){ console.error('Storage error', key, e); }
+  try{
+    await fetch(SUPABASE_URL+'/dashboard_state', {
+      method: 'POST',
+      headers: Object.assign({}, SB_HEADERS, {'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'}),
+      body: JSON.stringify({ key: 'forza_'+key, value: value, updated_at: new Date().toISOString() })
+    });
+  }catch(e){ console.error('Save error', key, e); }
 }
 
 let leadStatus = {};
