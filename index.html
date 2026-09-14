@@ -191,32 +191,31 @@
     color:var(--text-soft);
   }
   .chip.active{background:var(--teal-deep);color:#fff;border-color:var(--teal-deep);}
-  table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;}
+  .table-scroll{overflow-x:auto;border-radius:var(--radius-md);border:1px solid var(--line);}
+  table{width:100%;border-collapse:collapse;background:var(--surface);}
   thead th{
     text-align:left;
-    font-size:11.5px;
+    font-size:11px;
     color:var(--text-soft);
     font-weight:600;
-    padding:12px 14px;
+    padding:12px 12px;
     border-bottom:1px solid var(--line);
     background:var(--surface-alt);
+    white-space:nowrap;
   }
   tbody td{
-    padding:13px 14px;
-    font-size:13.5px;
+    padding:12px;
+    font-size:13px;
     border-bottom:1px solid var(--line);
     vertical-align:top;
     color:var(--text);
+    line-height:1.5;
   }
   tbody tr:last-child td{border-bottom:none;}
-  tbody tr.lead-row{cursor:pointer;}
-  tbody tr.lead-row:hover{background:var(--surface-alt);}
-  .lead-company{font-weight:600;color:#fff;}
-  .lead-hq{color:var(--text-soft);font-size:12px;}
-  .detail-row td{background:var(--surface-alt);padding:0 14px 16px;font-size:13px;color:var(--text-soft);line-height:1.55;}
-  .detail-row.hidden{display:none;}
-  .research-block{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);}
-  .research-block strong{color:var(--text);}
+  tbody tr:hover{background:var(--surface-alt);}
+  td.col-wide{min-width:130px;}
+  td.col-xwide{min-width:230px;max-width:320px;}
+  .lead-company{font-weight:600;color:#fff;white-space:nowrap;}
   .priority-badge{
     display:inline-flex;
     align-items:center;
@@ -377,12 +376,14 @@
         <p class="view-desc">ICP A and ICP B prospects, sourced and tracked here. Click a row for the full rationale; use the status dropdown to log outreach progress.</p>
       </div>
       <div class="chip-row" id="lead-chips"></div>
+      <div class="table-scroll">
       <table>
         <thead>
-          <tr><th>Company</th><th>Employees</th><th>Vertical</th><th>Funding</th><th>Priority</th><th>Status</th></tr>
+          <tr><th>Company</th><th>HQ</th><th>Employees</th><th>Funding</th><th>Vertical</th><th>Website</th><th>Why They Fit / US Signal</th><th>Suggested Buyer / Angle</th><th>Research Notes</th><th>Priority</th><th>Status</th></tr>
         </thead>
         <tbody id="lead-tbody"></tbody>
       </table>
+      </div>
     </section>
 
     <!-- CREDITS -->
@@ -461,30 +462,30 @@ const STATUS_CLASS = {"To research":"research","Contacted":"contacted","Replied"
 
 const SEED_LEADS = {
   "icp-a": {label:"ICP A · US", companies:[
-    {name:"NetBox Labs", hq:"New York, NY", employees:"~140", funding:"$55M (Series B)", vertical:"DevOps / Cloud Infra", detail:"Top of employee range; enterprise customers (ARM, CoreWeave, J.P. Morgan); scaling GTM fast post-raise.", priority:2, research:"Hiring Demand Gen for marketing and several sales. Does not appear in search results for their key terms. Good website, too many landing pages + no FAQs for GEO. Too generic"},
-    {name:"Payabli", hq:"Miami, FL", employees:"~110-115", funding:"$108M total (Series B)", vertical:"Fintech B2B", detail:"Well-funded embedded payments infra for software companies — has budget, needs pipeline efficiency.", priority:1, research:"Not in top results/not widely known. Slow website no SEO + no FAQs section for GEO"},
-    {name:"Supply Wisdom", hq:"New York, NY", employees:"~122", funding:"$30.5M+ (Series B)", vertical:"B2B Risk Intelligence / BI SaaS", detail:"Recently expanded internationally (Dublin office) — signals active GTM investment.", priority:1, research:"Heavy render + no FAQs landing + no GEO strat. Hiring for expansion all marketing and sales positions"},
-    {name:"Runlayer", hq:"New York, NY", employees:"~39", funding:"$41M (Series A)", vertical:"AI Governance / Security", detail:"On-trend AI agent security category — natural fit for an AI visibility wedge conversation.", priority:2, research:"Small company 53 employees. Website made with AI + no SEO or GEO. Poor results with GEO, too many GTM people involved"},
-    {name:"Nebulock", hq:"Boston, MA", employees:"~36", funding:"$33.5M (Series A)", vertical:"AI / Cybersecurity", detail:"Small, lean team scaling fast post-raise — classic \"scale without hiring 10 SDRs\" profile.", priority:1, research:"Investing in Demand Gen and Content Writers. Lots of impressions but no conversion. Heavy, no authority, no GEO score above 50"},
-    {name:"Zip Security", hq:"New York, NY", employees:"~30-60 (est.)", funding:"$21M total (Series A)", vertical:"Cybersecurity (SMB-focused)", detail:"Selling into underserved SMB security market — needs efficient outbound and content.", priority:1, research:"Small company of 27 employees, looking to hire SEO & AI Search Manager. Average GEO score, needs EET"},
-    {name:"Pangea", hq:"Palo Alto, CA", employees:"~28 (below floor)", funding:"Series A/B (undisclosed)", vertical:"AI Security Platform", detail:"Slightly below employee floor, but strong AI SaaS vertical fit; founder-led buyer.", priority:2, research:"Was acquired so they have budget, website is not being supported. Need SEO and GEO"},
-    {name:"Endor Labs", hq:"Palo Alto, CA", employees:"80-150+ (unconfirmed)", funding:"$188M total (3 rounds)", vertical:"AppSec / DevOps", detail:"Heavily funded, security-for-developers vertical, likely scaling GTM aggressively.", priority:3, research:"Larger than our scope of work but a possible hail mary. Looking to hire, so scaling is up and may need GTM for LATAM in general. Heavy page and not optimized. Needs SEO and GEO audit."}
+    {name:"NetBox Labs", hq:"New York, NY", employees:"~140", funding:"$55M (Series B)", vertical:"DevOps / Cloud Infra", website:"netboxlabs.com", detail:"Top of employee range; enterprise customers (ARM, CoreWeave, J.P. Morgan); scaling GTM fast post-raise.", angle:"VP Marketing / Head of Growth — lead with GTM efficiency post-Series B", priority:2, research:"Hiring Demand Gen for marketing and several sales. Does not appear in search results for their key terms. Good website, too many landing pages + no FAQs for GEO. Too generic"},
+    {name:"Payabli", hq:"Miami, FL", employees:"~110-115", funding:"$108M total (Series B)", vertical:"Fintech B2B", website:"payabli.com", detail:"Well-funded embedded payments infra for software companies — has budget, needs pipeline efficiency.", angle:"VP Marketing / CMO — lead with AI search visibility angle", priority:1, research:"Not in top results/not widely known. Slow website no SEO + no FAQs section for GEO"},
+    {name:"Supply Wisdom", hq:"New York, NY", employees:"~122", funding:"$30.5M+ (Series B)", vertical:"B2B Risk Intelligence / BI SaaS", website:"supplywisdom.com", detail:"Recently expanded internationally (Dublin office) — signals active GTM investment.", angle:"VP Sales / CRO — lead with pipeline scaling during expansion", priority:1, research:"Heavy render + no FAQs landing + no GEO strat. Hiring for expansion all marketing and sales positions"},
+    {name:"Runlayer", hq:"New York, NY", employees:"~39", funding:"$41M (Series A)", vertical:"AI Governance / Security", website:"runlayer.com", detail:"On-trend AI agent security category — natural fit for an AI visibility wedge conversation.", angle:"Founder / CEO — lead with AI search + category-creation positioning", priority:2, research:"Small company 53 employees. Website made with AI + no SEO or GEO. Poor results with GEO, too many GTM people involved"},
+    {name:"Nebulock", hq:"Boston, MA", employees:"~36", funding:"$33.5M (Series A)", vertical:"AI / Cybersecurity", website:"nebulock.io", detail:"Small, lean team scaling fast post-raise — classic \"scale without hiring 10 SDRs\" profile.", angle:"Founder / CEO — lead with efficient outbound + GTM stack review", priority:1, research:"Investing in Demand Gen and Content Writers. Lots of impressions but no conversion. Heavy, no authority, no GEO score above 50"},
+    {name:"Zip Security", hq:"New York, NY", employees:"~30-60 (est.)", funding:"$21M total (Series A)", vertical:"Cybersecurity (SMB-focused)", website:"zipsec.com", detail:"Selling into underserved SMB security market — needs efficient outbound and content.", angle:"VP Marketing / Head of Growth — lead with content + demand gen efficiency", priority:1, research:"Small company of 27 employees, looking to hire SEO & AI Search Manager. Average GEO score, needs EET"},
+    {name:"Pangea", hq:"Palo Alto, CA", employees:"~28 (below floor)", funding:"Series A/B (undisclosed)", vertical:"AI Security Platform", website:"pangea.cloud", detail:"Slightly below employee floor, but strong AI SaaS vertical fit; founder-led buyer.", angle:"Founder / CEO — lead with AI visibility + developer-marketing angle", priority:2, research:"Was acquired so they have budget, website is not being supported. Need SEO and GEO"},
+    {name:"Endor Labs", hq:"Palo Alto, CA", employees:"80-150+ (unconfirmed)", funding:"$188M total (3 rounds)", vertical:"AppSec / DevOps", website:"endorlabs.com", detail:"Heavily funded, security-for-developers vertical, likely scaling GTM aggressively.", angle:"VP Marketing / CMO — lead with GTM + AI search visibility audit", priority:3, research:"Larger than our scope of work but a possible hail mary. Looking to hire, so scaling is up and may need GTM for LATAM in general. Heavy page and not optimized. Needs SEO and GEO audit."}
   ]},
   "icp-b-uk": {label:"ICP B · UK & Europe", companies:[
-    {name:"Duffel", hq:"London, UK", employees:"~56", funding:"$56M total (Series B)", vertical:"Travel Tech API (B2B SaaS)", detail:"Serves US-based OTAs and travel platforms; steady growth trajectory."},
-    {name:"Cledara", hq:"London, UK", employees:"~50-100 (est.)", funding:"$24.4M (Series A)", vertical:"SaaS Spend Management", detail:"Self-reported 35%+ MoM growth in US expansion."},
-    {name:"Weavr", hq:"London, UK", employees:"~100+", funding:"$55M (Series A)", vertical:"Embedded Finance / BaaS", detail:"Scaling fast; fintech infrastructure vertical aligns directly with ICP."},
-    {name:"Hyperexponential", hq:"London, UK", employees:"~120", funding:"$91M total (Series B)", vertical:"Insurance Pricing SaaS", detail:"Team scaled from ~18 to ~120; strong enterprise SaaS growth signal."},
-    {name:"Lindus Health", hq:"London, UK", employees:"~132", funding:"$80M+ (Series B)", vertical:"AI Clinical Trials (HealthTech B2B)", detail:"Already running trials across UK, US and EU."},
-    {name:"Robin AI", hq:"London, UK", employees:"~100+ (unconfirmed)", funding:"$61.5M total (Series B)", vertical:"LegalTech AI", detail:"Explicit: US operations expanded 6x in 2024."},
-    {name:"Griffin", hq:"London, UK", employees:"~50-100 (est.)", funding:"$59.7M total (Series A)", vertical:"Banking-as-a-Service", detail:"Enterprise fintech infra provider; natural GTM/AI-visibility buyer as it scales."},
-    {name:"Ben", hq:"London, UK", employees:"~51-100", funding:"$21M total (Series A)", vertical:"HR Tech / Benefits SaaS", detail:"Multi-country deployments; scaling GTM team."},
-    {name:"Storyblok", hq:"Linz, Austria", employees:"~230-280 (above ceiling)", funding:"Series C (undisclosed)", vertical:"Headless CMS (B2B SaaS)", detail:"20% of revenue already from the US; standing up a dedicated US legal entity."}
+    {name:"Duffel", hq:"London, UK", employees:"~56", funding:"$56M total (Series B)", vertical:"Travel Tech API (B2B SaaS)", website:"duffel.com", detail:"Serves US-based OTAs and travel platforms; steady growth trajectory.", angle:"VP Marketing / Head of Growth — lead with GTM efficiency + AI search visibility for API docs/dev audience"},
+    {name:"Cledara", hq:"London, UK", employees:"~50-100 (est.)", funding:"$24.4M (Series A)", vertical:"SaaS Spend Management", website:"cledara.com", detail:"Self-reported 35%+ MoM growth in US expansion.", angle:"VP Marketing / CMO — lead directly with their own stated US growth momentum"},
+    {name:"Weavr", hq:"London, UK", employees:"~100+", funding:"$55M (Series A)", vertical:"Embedded Finance / BaaS", website:"weavr.io", detail:"Scaling fast; fintech infrastructure vertical aligns directly with ICP.", angle:"VP Sales / CRO — lead with pipeline scaling into new US accounts"},
+    {name:"Hyperexponential", hq:"London, UK", employees:"~120", funding:"$91M total (Series B)", vertical:"Insurance Pricing SaaS", website:"hyperexponential.com", detail:"Team scaled from ~18 to ~120; strong enterprise SaaS growth signal.", angle:"Founder / CEO — lead with GTM + AI visibility audit ahead of next raise"},
+    {name:"Lindus Health", hq:"London, UK", employees:"~132", funding:"$80M+ (Series B)", vertical:"AI Clinical Trials (HealthTech B2B)", website:"lindushealth.com", detail:"Already running trials across UK, US and EU.", angle:"VP Marketing / Head of Growth — lead with US market credibility + AI search visibility"},
+    {name:"Robin AI", hq:"London, UK", employees:"~100+ (unconfirmed)", funding:"$61.5M total (Series B)", vertical:"LegalTech AI", website:"robinai.com", detail:"Explicit: US operations expanded 6x in 2024.", angle:"VP Marketing / CMO — lead directly with their own stated US expansion"},
+    {name:"Griffin", hq:"London, UK", employees:"~50-100 (est.)", funding:"$59.7M total (Series A)", vertical:"Banking-as-a-Service", website:"griffin.com", detail:"Enterprise fintech infra provider; natural GTM/AI-visibility buyer as it scales.", angle:"Founder / CEO — lead with GTM + partnerships angle"},
+    {name:"Ben", hq:"London, UK", employees:"~51-100", funding:"$21M total (Series A)", vertical:"HR Tech / Benefits SaaS", website:"hiben.co", detail:"Multi-country deployments; scaling GTM team.", angle:"VP Marketing / Head of Growth — lead with content + demand gen efficiency"},
+    {name:"Storyblok", hq:"Linz, Austria", employees:"~230-280 (above ceiling)", funding:"Series C (undisclosed)", vertical:"Headless CMS (B2B SaaS)", website:"storyblok.com", detail:"20% of revenue already from the US; standing up a dedicated US legal entity.", angle:"VP Marketing / CMO — lead with GTM + AI visibility given active US entity setup"}
   ]},
   "icp-b-latam": {label:"ICP B · LATAM", companies:[
-    {name:"Yuno", hq:"Bogotá, Colombia", employees:"~100-150", funding:"$80M total (Series B)", vertical:"Payments Orchestration (Fintech B2B)", detail:"Explicit, from their own Series B press: capital earmarked to \"escalar su presencia en Estados Unidos.\" Clients include McDonald's and GoFundMe."},
-    {name:"Truora", hq:"Cali/Bogotá, Colombia", employees:"~200-240", funding:"$21.9M (Series A)", vertical:"Identity Verification API", detail:"Y Combinator-backed; maintains a real San Francisco office."},
-    {name:"Pomelo", hq:"Buenos Aires, Argentina", employees:"~390-400 (above ceiling)", funding:"$158-175M (Series C)", vertical:"Card Issuing / BaaS Infra", detail:"Just launched a global card product spanning 150+ countries — global framing, not US-specific. Stretch pick."}
+    {name:"Yuno", hq:"Bogotá, Colombia", employees:"~100-150", funding:"$80M total (Series B)", vertical:"Payments Orchestration (Fintech B2B)", website:"yuno.com", detail:"Explicit, from their own Series B press: capital earmarked to \"escalar su presencia en Estados Unidos.\" Clients include McDonald's and GoFundMe.", angle:"VP Marketing / CMO — lead directly with their own stated US growth momentum and AI search visibility for a payments-infra buyer audience"},
+    {name:"Truora", hq:"Cali/Bogotá, Colombia", employees:"~200-240", funding:"$21.9M (Series A)", vertical:"Identity Verification API", website:"truora.com", detail:"Y Combinator-backed; maintains a real San Francisco office.", angle:"VP Sales / CRO — lead with pipeline scaling into US-based fintech/marketplace accounts"},
+    {name:"Pomelo", hq:"Buenos Aires, Argentina", employees:"~390-400 (above ceiling)", funding:"$158-175M (Series C)", vertical:"Card Issuing / BaaS Infra", website:"pomelo.la", detail:"Just launched a global card product spanning 150+ countries — global framing, not US-specific. Stretch pick.", angle:"Founder / CEO — lead with GTM + AI visibility audit given global product expansion narrative"}
   ]}
 };
 
@@ -545,16 +546,22 @@ function renderLeadTable(){
   const companies = [...SEED_LEADS[activeChip].companies].sort((a,b)=>(a.priority||9)-(b.priority||9));
   companies.forEach((c,i)=>{
     const row = document.createElement('tr');
-    row.className = 'lead-row';
     const priorityCell = c.priority ? `<span class="priority-badge p${c.priority}">P${c.priority}</span>` : `<span class="priority-badge">—</span>`;
+    const websiteCell = c.website ? `<a href="https://${c.website}" target="_blank" rel="noopener">${c.website}</a>` : '—';
+    const researchCell = c.research || '—';
     row.innerHTML = `
-      <td><div class="lead-company">${c.name}</div><div class="lead-hq">${c.hq}</div></td>
+      <td><div class="lead-company">${c.name}</div></td>
+      <td class="col-wide">${c.hq}</td>
       <td>${c.employees}</td>
-      <td>${c.vertical}</td>
-      <td>${c.funding}</td>
+      <td class="col-wide">${c.funding}</td>
+      <td class="col-wide">${c.vertical}</td>
+      <td class="col-wide">${websiteCell}</td>
+      <td class="col-xwide">${c.detail}</td>
+      <td class="col-xwide">${c.angle || ''}</td>
+      <td class="col-xwide">${researchCell}</td>
       <td>${priorityCell}</td>
       <td></td>`;
-    const statusTd = row.children[5];
+    const statusTd = row.lastElementChild;
     const sel = document.createElement('select');
     sel.className = 'status-select';
     STATUSES.forEach(s=>{
@@ -563,18 +570,9 @@ function renderLeadTable(){
       if(statusOf(c.name)===s) opt.selected = true;
       sel.appendChild(opt);
     });
-    sel.onclick = e=>e.stopPropagation();
     sel.onchange = ()=> setStatus(c.name, sel.value);
     statusTd.appendChild(sel);
-
-    const detailRow = document.createElement('tr');
-    detailRow.className = 'detail-row hidden';
-    const researchHtml = c.research ? `<div class="research-block"><strong>Research notes:</strong> ${c.research}</div>` : '';
-    detailRow.innerHTML = `<td colspan="6">${c.detail}${researchHtml}</td>`;
-
-    row.onclick = ()=> detailRow.classList.toggle('hidden');
     tbody.appendChild(row);
-    tbody.appendChild(detailRow);
   });
 }
 
