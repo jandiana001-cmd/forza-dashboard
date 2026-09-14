@@ -178,6 +178,7 @@
   .pill.replied{background:rgba(154,84,120,0.22);color:#D999BB;}
   .pill.meeting{background:var(--teal-deep);color:#fff;}
   .pill.closed{background:#fff;color:#0A0A0B;}
+  .pill.ready{background:rgba(14,143,143,0.35);color:#7FDCDC;}
   /* ---------- lead list ---------- */
   .chip-row{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
   .chip{
@@ -233,6 +234,26 @@
   .priority-badge.p1{background:var(--teal-deep);color:#fff;border-color:var(--teal-deep);}
   .priority-badge.p2{background:rgba(107,107,110,0.3);color:#D6D6D8;border-color:var(--line);}
   .priority-badge.p3{background:rgba(154,84,120,0.22);color:#D999BB;border-color:var(--plum);}
+  .lead-row{cursor:pointer;}
+  .brief-toggle{
+    background:none;
+    border:1px solid var(--line);
+    color:var(--teal);
+    font-size:12px;
+    font-weight:600;
+    padding:5px 10px;
+    border-radius:100px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .brief-toggle:hover{background:rgba(14,143,143,0.12);}
+  .brief-row.hidden{display:none;}
+  .brief-row td{background:var(--surface-alt);padding:0;}
+  .brief-panel{padding:16px 20px;}
+  .brief-section{margin-bottom:14px;}
+  .brief-section:last-child{margin-bottom:0;}
+  .brief-section strong{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:0.04em;color:var(--teal);margin-bottom:5px;}
+  .brief-section p{margin:0;font-size:13px;line-height:1.6;color:var(--text);white-space:pre-line;}
   select.status-select{
     font-family:'Inter',sans-serif;
     font-size:12.5px;
@@ -373,13 +394,13 @@
     <section class="view" id="view-leads">
       <div class="view-head">
         <h1 class="view-title">Lead lists</h1>
-        <p class="view-desc">ICP A and ICP B prospects, sourced and tracked here. Click a row for the full rationale; use the status dropdown to log outreach progress.</p>
+        <p class="view-desc">ICP A and ICP B prospects, synced live from the shared Drive. Core details are in the table; click "Full brief" on a row for research notes, SEO/GEO analysis, and outreach scripts where available.</p>
       </div>
       <div class="chip-row" id="lead-chips"></div>
       <div class="table-scroll">
       <table>
         <thead>
-          <tr><th>Company</th><th>HQ</th><th>Employees</th><th>Funding</th><th>Vertical</th><th>Website</th><th>Why They Fit / US Signal</th><th>Suggested Buyer / Angle</th><th>Research Notes</th><th>Priority</th><th>Status</th></tr>
+          <tr><th>Company</th><th>HQ</th><th>Employees</th><th>Funding</th><th>Vertical</th><th>Website</th><th>Priority</th><th>Status</th><th></th></tr>
         </thead>
         <tbody id="lead-tbody"></tbody>
       </table>
@@ -462,8 +483,8 @@
 </div>
 
 <script>
-const STATUSES = ["To research","Contacted","Replied","Meeting booked","Closed"];
-const STATUS_CLASS = {"To research":"research","Contacted":"contacted","Replied":"replied","Meeting booked":"meeting","Closed":"closed"};
+const STATUSES = ["To research","Ready for outreach","Contacted","Replied","Meeting booked","Closed"];
+const STATUS_CLASS = {"To research":"research","Ready for outreach":"ready","Contacted":"contacted","Replied":"replied","Meeting booked":"meeting","Closed":"closed"};
 
 let SEED_LEADS = {
   "icp-a": {label:"ICP A · US", companies:[
@@ -545,7 +566,7 @@ const DEFAULT_TASKS = [
   {text:"Build GEO content template (FAQ blocks) to pitch as quick-win in audits", done:false, owner:"SEO"}
 ];
 
-function statusOf(name){ return leadStatus[name] || "To research"; }
+function statusOf(c){ return leadStatus[c.name] || c.sheetStatus || "To research"; }
 function setStatus(name, val){ leadStatus[name]=val; saveKey('leadStatus', leadStatus); renderAll(); }
 
 // ---------- nav ----------
@@ -576,9 +597,9 @@ function renderLeadTable(){
   const companies = [...SEED_LEADS[activeChip].companies].sort((a,b)=>(a.priority||9)-(b.priority||9));
   companies.forEach((c,i)=>{
     const row = document.createElement('tr');
+    row.className = 'lead-row';
     const priorityCell = c.priority ? `<span class="priority-badge p${c.priority}">P${c.priority}</span>` : `<span class="priority-badge">—</span>`;
-    const websiteCell = c.website ? `<a href="https://${c.website}" target="_blank" rel="noopener">${c.website}</a>` : '—';
-    const researchCell = c.research || '—';
+    const websiteCell = c.website ? `<a href="https://${c.website}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${c.website}</a>` : '—';
     row.innerHTML = `
       <td><div class="lead-company">${c.name}</div></td>
       <td class="col-wide">${c.hq}</td>
@@ -586,23 +607,42 @@ function renderLeadTable(){
       <td class="col-wide">${c.funding}</td>
       <td class="col-wide">${c.vertical}</td>
       <td class="col-wide">${websiteCell}</td>
-      <td class="col-xwide">${c.detail}</td>
-      <td class="col-xwide">${c.angle || ''}</td>
-      <td class="col-xwide">${researchCell}</td>
       <td>${priorityCell}</td>
-      <td></td>`;
-    const statusTd = row.lastElementChild;
+      <td></td>
+      <td><button class="brief-toggle">Full brief</button></td>`;
+    const statusTd = row.children[7];
     const sel = document.createElement('select');
     sel.className = 'status-select';
     STATUSES.forEach(s=>{
       const opt = document.createElement('option');
       opt.value = s; opt.textContent = s;
-      if(statusOf(c.name)===s) opt.selected = true;
+      if(statusOf(c)===s) opt.selected = true;
       sel.appendChild(opt);
     });
+    sel.onclick = e=>e.stopPropagation();
     sel.onchange = ()=> setStatus(c.name, sel.value);
     statusTd.appendChild(sel);
+
+    const briefRow = document.createElement('tr');
+    briefRow.className = 'brief-row hidden';
+    const sections = [
+      ['Why They Fit / US Signal', c.detail],
+      ['Suggested Buyer / Angle', c.angle],
+      ['Research Notes', c.research],
+      ['SEO/GEO Overview', c.seoGeoNotes],
+      ['AI Positioning Notes', c.aiPitchNotes],
+      ['What To Say', c.whatToSay],
+      ['Outreach Notes', c.outreachNotes],
+    ].filter(([,v]) => v && v.trim());
+    const briefHtml = sections.length
+      ? sections.map(([label,val]) => `<div class="brief-section"><strong>${label}</strong><p>${val.replace(/\n/g,'<br>')}</p></div>`).join('')
+      : '<div class="brief-section" style="color:var(--text-soft);">No additional notes yet for this company.</div>';
+    briefRow.innerHTML = `<td colspan="9"><div class="brief-panel">${briefHtml}</div></td>`;
+
+    row.querySelector('.brief-toggle').onclick = (e)=>{ e.stopPropagation(); briefRow.classList.toggle('hidden'); };
+    row.onclick = ()=> briefRow.classList.toggle('hidden');
     tbody.appendChild(row);
+    tbody.appendChild(briefRow);
   });
 }
 
@@ -769,8 +809,8 @@ function allLeads(){
 }
 function renderOverview(){
   const leads = allLeads();
-  const openLeads = leads.filter(l=>{const s=statusOf(l.name); return s!=='Closed';}).length;
-  const meetingCount = leads.filter(l=>statusOf(l.name)==='Meeting booked').length;
+  const openLeads = leads.filter(l=>{const s=statusOf(l); return s!=='Closed';}).length;
+  const meetingCount = leads.filter(l=>statusOf(l)==='Meeting booked').length;
   const openTasks = tasks.filter(t=>!t.done).length;
   let lowestPct = null;
   pools.forEach(p=>{
@@ -795,11 +835,11 @@ function renderOverview(){
   });
 
   const leadsBox = document.getElementById('overview-leads');
-  const attention = leads.filter(l=>statusOf(l.name)==='To research' || statusOf(l.name)==='Meeting booked').slice(0,6);
+  const attention = leads.filter(l=>statusOf(l)==='To research' || statusOf(l)==='Meeting booked').slice(0,6);
   leadsBox.innerHTML = attention.length ? attention.map(l=>`
     <div class="mini-row">
       <div><div class="name">${l.name}</div><div class="sub">${l.vertical}</div></div>
-      <span class="pill ${STATUS_CLASS[statusOf(l.name)]}">${statusOf(l.name)}</span>
+      <span class="pill ${STATUS_CLASS[statusOf(l)]}">${statusOf(l)}</span>
     </div>`).join('') : '<div style="color:var(--ink-soft);font-size:13px;">All leads are in progress — check the Leads tab.</div>';
 
   const tasksBox = document.getElementById('overview-tasks');
